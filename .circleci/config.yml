@@ -1,26 +1,48 @@
 version: 2.1
-
 jobs:
-  sonar:
+  sonarcloud-scan:
     docker:
-      - image: circleci/node:14.17-browsers # Use a Node image with browser support if needed for frontend testing
+      - image: cimg/openjdk:17.0  # Ensure Java 17 is used for SonarScanner
+    working_directory: ~/build
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: npm install sonar-scanner --save-dev
-      - run:
-          name: Run SonarQube Analysis
+          name: Clear APT Cache
           command: |
-            npx sonar-scanner \
-              -Dsonar.projectKey=caroline-amy_SecurePaymentPortal \
-              -Dsonar.organization=caroline-amy \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONAR_TOKEN
-
+            sudo rm -rf /var/lib/apt/lists/*
+      - run:
+          name: Install Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y unzip
+      - run:
+          name: Install Sonar Scanner with Embedded JRE 17
+          command: |
+            curl -L -o sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+            unzip sonar-scanner-cli.zip
+            mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+            echo 'export PATH=$PATH:$(pwd)/sonar-scanner/bin' >> $BASH_ENV
+      - run:
+          name: Run SonarCloud Analysis
+          command: |
+            source $BASH_ENV
+            export JAVA_HOME=/opt/java/openjdk
+            export PATH=$JAVA_HOME/bin:$PATH
+            java -version  # Confirm Java 17
+            SONAR_BRANCH="${CIRCLE_BRANCH:-master}"
+            echo "Sonar branch value is: $SONAR_BRANCH"
+            sonar-scanner \
+              -Dsonar.projectKey="caroline-amy_SecurePaymentPortal" \
+              -Dsonar.organization="caroline-amy" \
+              -Dsonar.host.url="https://sonarcloud.io" \
+              -Dsonar.login="$SONAR_TOKEN" \
+              -Dsonar.branch.name="$SONAR_BRANCH" \
+              -Dsonar.sources="." \
+              -Dsonar.c.file.suffixes=- \
+              -Dsonar.cpp.file.suffixes=- \
+              -Dsonar.objc.file.suffixes=-
 workflows:
   version: 2
-  sonar_workflow:
+  sonarcloud-workflow:
     jobs:
-      - sonar
+      - sonarcloud-scan
