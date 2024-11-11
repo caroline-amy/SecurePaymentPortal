@@ -8,12 +8,11 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: npm install # Adjust this to fit your project's package manager (e.g., yarn install)
+          command: npm install sonar-scanner --save-dev
       - run:
           name: Run SonarQube Analysis
           command: |
-            npm install -g sonar-scanner
-            sonar-scanner \
+            npx sonar-scanner \
               -Dsonar.projectKey=caroline-amy_SecurePaymentPortal \
               -Dsonar.organization=caroline-amy \
               -Dsonar.sources=. \
