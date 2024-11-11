@@ -14,8 +14,8 @@ jobs:
           command: |
             npm install -g sonar-scanner
             sonar-scanner \
-              -Dsonar.projectKey=YOUR_PROJECT_KEY \
-              -Dsonar.organization=YOUR_ORGANIZATION_KEY \
+              -Dsonar.projectKey=caroline-amy_SecurePaymentPortal \
+              -Dsonar.organization=caroline-amy \
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONAR_TOKEN
